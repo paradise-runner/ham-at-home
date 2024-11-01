@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
@@ -58,11 +59,10 @@ export default function RootLayout({
         >
           <div className="relative flex min-h-screen flex-col">
             <SiteHeader />
-            <div className="container mx-auto max-w-4xl px-4">
-              {" "}
-              {/* Add this wrapper div */}
+            <div className="container mx-auto max-w-4xl px-4 flex-1">
               {children}
-            </div>{" "}
+            </div>
+            <SiteFooter />
           </div>
         </ThemeProvider>
       </body>
