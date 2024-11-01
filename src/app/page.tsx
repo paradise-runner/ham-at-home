@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { getAllPosts, getCategoryCount, getTagsFromPosts } from "@/lib/blog";
 import PostCard from "@/components/post-card";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -40,7 +42,8 @@ export async function generateMetadata({ params }: HomeProps) {
   };
 }
 
-export default async function Home({ params }: HomeProps) {
+export default function Home({ params }: HomeProps) {
+  const [expanded, setExpanded] = useState(false);
   const { category } = params;
   
   // Use Promise.all for concurrent data fetching
@@ -101,16 +104,28 @@ export default async function Home({ params }: HomeProps) {
           <h2 className="text-lg font-semibold mb-2">
             {category ? `Tags in ${category}` : "All Tags"}
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {filteredTags.map(({ tag, count }) => (
-              <Link
-                key={tag}
-                href={`/tags/${encodeURIComponent(tag)}`}
-                className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted/80"
+          <div className="relative">
+            <div 
+              className={`flex flex-wrap gap-2 ${!expanded ? "max-h-[2.5rem] overflow-hidden" : ""}`}
+            >
+              {filteredTags.map(({ tag, count }) => (
+                <Link
+                  key={tag}
+                  href={`/tags/${encodeURIComponent(tag)}`}
+                  className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted/80"
+                >
+                  {tag} ({count})
+                </Link>
+              ))}
+            </div>
+            {filteredTags.length > 3 && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-2 text-sm text-muted-foreground hover:text-foreground"
               >
-                {tag} ({count})
-              </Link>
-            ))}
+                {expanded ? "Show less" : "Show more"}
+              </button>
+            )}
           </div>
         </div>
       </div>
