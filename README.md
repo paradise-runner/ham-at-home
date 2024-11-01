@@ -1,6 +1,8 @@
-# AI-Powered Blog Platform
+# 🐷@🏠
 
-This project combines a Next.js blog frontend with AI-powered content generation tools. It consists of three main components:
+The Ham at Home project combines a Next.js blog frontend with AI-powered content generation tools to empower the home developer to be able to generate an entire world of content from a small MacBook Air. 
+
+The project can run on a small local laptop with either enough swap storage or 64GB of memory. Blog posts from local take around ~20 minutes to generate. An M1 MacBook air should take around ~6 minutes per image, so anywhere from 14-30 minutes per post. It consists of three main components:
 
 ## 1. Blog Website (src/)
 A modern Next.js website implementing a blog platform with:
@@ -68,8 +70,7 @@ npm run dev
 
 ```
 ├── src/                  # Next.js blog frontend
-├── content/             # Generated blog posts
-│   └── posts/          # Markdown files
+│   └── markdown/posts    # Markdown files
 ├── public/             # Static assets
 │   └── images/        # Generated images
 ├── main.go             # Posts management CLI
