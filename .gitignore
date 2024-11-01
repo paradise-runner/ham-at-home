@@ -38,3 +38,13 @@ next-env.d.ts
 # wrangler files
 .wrangler
 .dev.vars
+
+# adsense
+/src/components/google-adsense.tsx
+
+# python .venv
+.venv
+.aider*
+.env
+__pycache__/
+.pytest_cache/

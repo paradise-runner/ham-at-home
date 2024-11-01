@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { getAllPosts, getCategoryCount, getTagsFromPosts } from "@/lib/blog";
 import PostCard from "@/components/post-card";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -35,15 +33,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: HomeProps) {
   const { category } = params;
   return {
-    title: category ? `${category} Posts` : "🐷@🏠 posts",
+    title: category ? `${category} Posts` : "🐷@🏠",
     description: category 
       ? `Browse all posts in the ${category} category`
       : "Browse all blog posts",
   };
 }
 
-export default function Home({ params }: HomeProps) {
-  const [expanded, setExpanded] = useState(false);
+export default async function Home({ params }: HomeProps) {
   const { category } = params;
   
   // Use Promise.all for concurrent data fetching
@@ -85,7 +82,7 @@ export default function Home({ params }: HomeProps) {
             {categories.map(({ category: cat, count }) => (
               <Link
                 key={cat}
-                href={`/?category=${encodeURIComponent(cat)}`}
+                href={`/categories/${encodeURIComponent(cat)}`}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
                   ${
                     category === cat
@@ -99,35 +96,6 @@ export default function Home({ params }: HomeProps) {
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">
-            {category ? `Tags in ${category}` : "All Tags"}
-          </h2>
-          <div className="relative">
-            <div 
-              className={`flex flex-wrap gap-2 ${!expanded ? "max-h-[2.5rem] overflow-hidden" : ""}`}
-            >
-              {filteredTags.map(({ tag, count }) => (
-                <Link
-                  key={tag}
-                  href={`/tags/${encodeURIComponent(tag)}`}
-                  className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted/80"
-                >
-                  {tag} ({count})
-                </Link>
-              ))}
-            </div>
-            {filteredTags.length > 3 && (
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="mt-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                {expanded ? "Show less" : "Show more"}
-              </button>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Featured Post */}
@@ -191,6 +159,23 @@ export default function Home({ params }: HomeProps) {
           ))}
         </Suspense>
       </div>
+      {/* Tags */}
+      <div className="my-6">
+          <h2 className="text-lg font-semibold mb-2">
+            {category ? `Tags in ${category}` : "All Tags"}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {filteredTags.map(({ tag, count }) => (
+              <Link
+                key={tag}
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted/80"
+              >
+                {tag} ({count})
+              </Link>
+            ))}
+          </div>
+        </div>
     </main>
   );
 }
