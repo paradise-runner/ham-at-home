@@ -1,113 +1,198 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getAllPosts, getCategoryCount, getTagsFromPosts } from "@/lib/blog";
+import PostCard from "@/components/post-card";
+import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowRight } from "lucide-react";
 
-export default function Home() {
+interface HomeProps {
+  params: { category?: string };
+}
+
+// Generate static params for all possible category values
+export async function generateStaticParams() {
+  const categories = await getCategoryCount();
+  return [
+    { category: undefined }, // For the homepage without category
+    ...categories.map(({ category }) => ({
+      category: category,
+    })),
+  ];
+}
+
+// Generate static metadata
+export async function generateMetadata({ params }: HomeProps) {
+  const { category } = params;
+  return {
+    title: category ? `${category} Posts` : "🐷@🏠 posts",
+    description: category 
+      ? `Browse all posts in the ${category} category`
+      : "Browse all blog posts",
+  };
+}
+
+export default async function Home({ params }: HomeProps) {
+  const { category } = params;
+  
+  // Use Promise.all for concurrent data fetching
+  const [posts, categories] = await Promise.all([
+    getAllPosts(),
+    getCategoryCount(),
+  ]);
+
+  const filteredPosts = category
+    ? posts.filter((post) => post.category === category)
+    : posts;
+
+  // Get tags only from the filtered posts
+  const filteredTags = getTagsFromPosts(filteredPosts);
+
+  // Separate the first post for the featured card
+  const [featuredPost, ...remainingPosts] = filteredPosts;
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-4">Stories</h1>
+
+        {/* Category Filter */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">Categories</h2>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/"
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
+                ${
+                  !category
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+            >
+              All
+            </Link>
+            {categories.map(({ category: cat, count }) => (
+              <Link
+                key={cat}
+                href={`/?category=${encodeURIComponent(cat)}`}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
+                  ${
+                    category === cat
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+              >
+                {cat} ({count})
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">
+            {category ? `Tags in ${category}` : "All Tags"}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {filteredTags.map(({ tag, count }) => (
+              <Link
+                key={tag}
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground hover:bg-muted/80"
+              >
+                {tag} ({count})
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      {/* Featured Post */}
+      {featuredPost && (
+        <div className="mb-12">
+          <Card className="group relative overflow-hidden border-none transition-transform duration-300 hover:scale-[1.01]">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-blue-600 to-orange-600" />
+            <CardHeader className="relative z-20 space-y-6 text-white">
+              <div className="space-x-2">
+                <Badge
+                  variant="secondary"
+                  className="bg-white/10 text-white hover:bg-white/20"
+                >
+                  {featuredPost.category}
+                </Badge>
+                {featuredPost.tags?.slice(0, 2).map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="bg-white/10 text-white hover:bg-white/20"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <CardTitle className="text-2xl font-bold leading-tight tracking-tight text-white md:text-3xl lg:text-4xl lg:leading-tight">
+                  {featuredPost.title}
+                </CardTitle>
+                <CardDescription className="text-lg text-white/90 md:text-xl">
+                  {featuredPost.description}
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardFooter className="relative z-20 mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-8 w-8 border-2 border-white">
+                  <AvatarImage src="/images/llama.jpg" />
+                </Avatar>
+                <div className="text-sm text-white/80">
+                  Written by{" "}
+                  <span className="font-medium text-white">
+                    llama3.2
+                  </span>
+                </div>
+              </div>
+              <Link href={`/posts/${featuredPost.slug}`} className="flex items-center text-white group-hover:translate-x-1 transition-transform duration-200">
+                Read more <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </CardFooter>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          </Card>
+        </div>
+      )}
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      {/* Regular Post Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Suspense fallback={<PostsLoadingUI />}>
+          {remainingPosts.map((post) => (
+            <PostCard key={post.slug} post={post} />
+          ))}
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+function PostsLoadingUI() {
+  return (
+    <>
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div
+          key={i}
+          className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 space-y-2"
+        >
+          <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+          <div className="h-4 bg-muted rounded w-1/2 animate-pulse" />
+          <div className="h-20 bg-muted rounded animate-pulse mt-4" />
+        </div>
+      ))}
+    </>
   );
 }
