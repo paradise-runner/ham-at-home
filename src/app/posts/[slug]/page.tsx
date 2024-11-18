@@ -42,5 +42,3 @@ export default async function PostPage({ params }: Props) {
     </article>
   )
 }
-
-export const runtime = 'edge';

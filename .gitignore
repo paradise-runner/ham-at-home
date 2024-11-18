@@ -48,3 +48,5 @@ next-env.d.ts
 .env
 __pycache__/
 .pytest_cache/
+
+**ads.txt

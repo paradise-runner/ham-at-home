@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { GoogleAdsense } from "@/components/google-adsense";
 
 const inter = Inter({ subsets: ["latin"] });
