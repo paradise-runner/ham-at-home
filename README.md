@@ -1,4 +1,11 @@
 # 🐷@🏠
+![License](https://img.shields.io/github/license/paradise-runner/ham-at-home)
+![Contributions](https://img.shields.io/github/contributors/paradise-runner/ham-at-home)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/paradise-runner/phashboards)
+![GitHub last commit](https://img.shields.io/github/last-commit/paradise-runner/phashboards)
+![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
+![Go](https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white)
 
 The Ham at Home project combines a Next.js blog frontend with AI-powered content generation tools to empower the home developer to be able to generate an entire world of content from a small MacBook Air. 
 
